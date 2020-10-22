@@ -1,6 +1,6 @@
 #!/bin/bash
 
-filename='emails.txt'
+# constants for the group the new users will be put in and their default shell
 groupname=CSI230
 shellpath=/bin/bash
 
@@ -65,15 +65,14 @@ createUser()
   # checks if user does not exist
   if [ $exists = 0 ]; then
     useradd -m -s $shellpath -g $groupname $usern
-    #changes the new user's password to pass
-    echo ${usern}:${pass} | chpasswd
-    chage -d 0 $usern
-    mail -s "Temporary Password - Reset Required" $email <<< "Dear ${usern}, your password is ${pass}. You will be prompted to change your password on your next login."
-    echo "Sent temporary password to ${usern}'s email address."
+    echo "Created user ${usern}."
   else
     echo "Password for ${usern} has been updated."
-    passwd $usern
   fi
+  echo ${usern}:${pass} | chpasswd
+  chage -d 0 $usern
+  mail -s "Temporary Password - Reset Required" $email <<< "Dear ${usern}, your temporary password is ${pass}. You will be instructed to change your password upon next login."
+  echo "Sent temporary password to ${usern}'s email address."
 }
 
 # handles the -f flag of ./mail.sh
@@ -97,7 +96,7 @@ do
 done
 
 count=0
-
+# executes createUser() for each line in the input file
 while read p; do
   count=$(($count+1))
   echo $(createUser $(getUsername $count) $(createRandomPassword) $(getEmailAddress $count))
